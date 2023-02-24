@@ -1,0 +1,150 @@
+---
+title: "Check pedigrees after they've been simulated"
+output: pdf_document
+date: "2023-02-03"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+* A previous script in the workflow (`simrvped.R`) simulates
+150 pedigrees with at least 4 affected members and at least one HL.
+    * Pedigrees are stored in the `Outputfiles` directory in 
+    plain-text files `ascertained_pedi.txt` for `i`=1,...150.
+* This script identifies pedigrees that also have (i) no more 
+than 6 affected members, (ii) at least one HL case who carries a cRV
+and (iii) at least one NHL case. 
+* Specifically, we exclude pedigrees 
+with more than 6 affected members, or no HL cRV carriers, 
+or no NHL cases.
+* We end up with 102 pedigrees that meet the criteria
+for ascertainment and for inclusion in Christina's thesis.
+* From the set of 102, we choose the first 55 as the pool of pedigrees
+for our simulation study.
+    * Note: The number 55 is to match Christina's simulation study.
+
+## More details on the R code
+
+* In the R code chunk below, we initialize variables to hold
+the indices of pedigrees to be excluded. Specifically,
+the variable `morethan6` will hold
+the indices of pedigrees with more than 6 affected
+members, `noHLcarr` will
+hold the indices of pedigrees in which none of the HL
+cases are cRV carriers and `noNHL` will hold the indices of pedigrees with no NHL cases.
+* Next, we loop over the indices
+of the pedigrees, read each into R, plot it and check the
+selection criteria. If a pedigree fails a criterion, it is added to the appropriate vector of indices to be excluded. 
+* After the loop is finished, we keep the first 55 of the
+pedigrees that were not excluded.
+
+### Aside: An inconsistency in `sim_RVped()`'s output
+
+* Pedigrees are stored as data frames with rows for individuals
+and columns of information on each individual.
+* When working with pedigrees simulated by `sim_RVped()` 
+I noticed that the pedigree data structure has two columns
+that indicate affection status. The first is `affected`, which is 
+a logical with `TRUE` for affected individuals, `FALSE` for
+unaffected individuals and `NA` for unknown affection status. 
+The second is `subtype`, which is `HL` for HL-affected
+individuals, `NHL` for NHL-affected individuals, and `NA` for
+unaffected individuals. 
+* Unfortunately, `sim_RVped()` sometimes generates pedigrees with
+individuals having missing a missing value of `affected` and 
+a non-missing `subtype`. It seems wrong for subtype to be known
+but affection status to be unknown. I deal with this after calling `sim_RVped()` by setting the subtype variable in the
+returned data structure to missing.
+    * Note to self: I considered fixing the inconsistency directly in `SimRVPedigree` itself, but gave up on that idea because I don't have permissions to upload 
+    revisions to CRAN as Christina is the maintainer.
+
+```{r}
+set.seed(42)
+library(SimRVPedigree)
+# simulation study parameters
+npeds <- 150 # number of simulated pedigrees
+npool <- 55 # size of pool of pedigrees we want for our simulation study
+# vectors to hold indices of excluded pedigrees
+morethan6 <- NULL # more than 6 disease-affected members
+noHLcarr <- NULL # No HL carriers of cRV in affecteds
+noNHL <- NULL # No NHL among affecteds
+for(i in 1:npeds){
+  cat("\n----------------Pedigree",i,"-------------------\n")
+  pfile <-  paste0("Outputfiles/ascertained_ped",i,".txt")
+  if(!file.exists(pfile)) {
+    cat("file",pfile,"does not exist!\n")
+  } else { # read the pedigree into R and check it
+    ped <-  read.table(pfile)
+    # ped is read in as a data frame. It also needs to have class "ped"
+    # to be plotted.
+    class(ped) <-c("ped","data.frame")
+    plot(ped,cex=.4) 
+    # Now start checking the pedigree. First check for missing affection
+    # status but non-missing subtype.
+    if(any(is.na(ped$affected) & !is.na(ped$subtype))) {
+      cat("***ped members with missing affected and non-missing subtype -- \n")
+      cat("   setting such subtypes to missing and re-writing ped to file \n")
+      is.na(ped$subtype) <- is.na(ped$affected)
+      write.table(ped,file=pfile)
+    }
+    # Check for >6 affecteds. 
+    pind <- ped$affected
+    pind[is.na(pind)] <- FALSE # set missing affection status to FALSE
+    if(sum(pind)>6) {
+      cat("***More than 6 disease-affecteds***\n")
+      morethan6 <- c(morethan6,i)
+    }
+    # The last two checks pertain to the affecteds, so subset the
+    # pedigree to just the affecteds.
+    aped <- ped[pind,]
+    # Check for no HL carriers of a disease allele
+    aped$disease.alleles = aped$DA1+aped$DA2
+    if(sum(aped$subtype=="HL" & aped$disease.alleles>0)==0){
+      cat("***No HL carriers ***")
+      noHLcarr <- c(noHLcarr,i)
+    }
+    # Lastly, check for no NHLs in the pedigree
+    if(!any(aped$subtype=="NHL")) {
+      cat("***No NHL subtype***\n") 
+      noNHL <- c(noNHL,i)
+    }
+  }
+}
+# Print out the indices of the pedigrees to be excluded
+cat("more than 6 disease-affecteds:\n")
+print(morethan6)
+cat("disease alleles in NHL, but none in HL:\n")
+print(noHLcarr)
+cat("no NHL subtype among affecteds:\n")
+print(noNHL)
+# Keep the pedigrees not in one of the exclusion vectors. 
+keep <- setdiff(1:npeds,c(morethan6,noHLcarr,noNHL))
+cat("keep peds:\n")
+print(keep)
+```
+
+* Now save the indices of the first 55 usable pedigrees to use as our
+pool of pedigrees for the simulation study.
+
+```{r}
+pedpool <- keep[1:npool]
+save(pedpool,file="pedpool.RData")
+```
+
+## Generate the R script for the cluster.
+
+* The above R commands run on my laptop in about 40 seconds, so it's not
+really necessary to use the cluster. 
+* However, if you prefer to run on the cluster, you can generate
+the necessary R script by cutting-and-pasting the following into your R console:
+
+```{r}
+knitr::purl(input="checkpeds.Rmd",output="checkpeds.R")
+```
+
+* This will produce an R script containing all the code chunks
+in this `Rmd` file. Delete the code chunk at the beginning of the resulting R script that sets up `knitr` (i.e., the first code chunk in this `.Rmd` file). Also delete the code chunk at
+the end of the R script that contains the above `purl()` command.
