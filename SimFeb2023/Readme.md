@@ -16,6 +16,6 @@ The pedigree-screening files are:
 * **checkpeds.sh**: The SLURM script to run on the cluster (not strictly necessary).  To run the script, you can type "SBATCH checkpeds.sh" from the command line on the cluster.
 
 Once we get the 55 eligible pedigrees to work with, the next step is to get the pool of exome sequences from which to draw pedgree founder sequences from Nirodha's simulated American admixed population and specify the pool of causal RVs (cRVs) in the population. The relevant files for this step are:
-* **getseqscrvs.Rmd**: An Rmarkdown file describing how the R script **getseqscrvs.R** gets the sequences and cRVs in the population. 
-* **getseqscrvs.R**: The associated R script called by the SLURM script on the Compute Canada cluster.
-* **getseqscrvs.sh**: The SLURM script to run on the cluster (not strictly necessary).  To run the script, you can type "SBATCH getseqscrvs.sh" from the command line on the cluster.
+* **getseqscrvs.Rmd**: An Rmarkdown file describing how the R script **getseqscrvs.R** gets the sequences and cRVs in the population. Assumes that the R data file chromwide.Rdata has been downloaded from Nirodha's Zenodo repository and placed in the same directory.
+* **getseqscrvs.R**: The associated R script called by the SLURM script on the Compute Canada cluster. Assumes that the R data file chromwide.Rdata has been downloaded from Nirodha's Zenodo repository and placed in the same directory.
+* **getseqscrvs.sh**: The SLURM script to run on the cluster (not strictly necessary).  To run the script, you can type "SBATCH getseqscrvs.sh" from the command line on the cluster. Assumes that the R data file chromwide.Rdata has been downloaded from Nirodha's Zenodo repository and placed in the same directory.
