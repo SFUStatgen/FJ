@@ -1,7 +1,7 @@
 ---
 title: "Check pedigrees after they've been simulated"
 output: pdf_document
-date: "2023-02-24"
+date: "2023-03-11"
 ---
 
 ```{r, include=FALSE}
@@ -14,7 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 150 pedigrees with at least 4 affected members and at least one HL.
     * Pedigrees are stored in the `Outputfiles` directory in 
     plain-text files `ascertained_pedi.txt` for `i`=1,...150.
-* This script identifies pedigrees that also have (i) no more 
+* This script identifies pedigrees that meet the selection criteria
+in Christina's thesis; i.e., that have (i) no more 
 than 6 affected members, (ii) at least one HL case who carries a cRV
 and (iii) at least one NHL case. 
 * Specifically, we exclude pedigrees 
@@ -24,11 +25,51 @@ or no NHL cases.
 for ascertainment and for inclusion in Christina's thesis.
 * From the set of 102, we choose the first 55 as the pool of pedigrees
 for our simulation study.
-    * Note: The number 55 is to match Christina's simulation study.
+    * Note: The number 55 is to match the number in Christina's simulation study.
 
-## More details on the R code
+## Plotting the affecteds and their ancestors only
 
-* In the R code chunk below, we initialize variables to hold
+* As we are checking the pedigrees for their eligibility,
+we also plot them.
+The `plot()` function from `SimRVPedigree` shows the entire
+ascertained pedigree. To streamline the plots produced by this script we
+use the following plot function that shows just the 
+affected members and their ancestors.
+
+```{r}
+plot_affped <- function(ped,cex=.4){
+  # Get IDs of affecteds in the pedigrees
+  aff <- ped$affected # may include missing values
+  aff[is.na(aff)] <- FALSE  
+  affIDs <- ped$ID[aff]
+  # Initialize a vector of pedigree member IDs we'd like to keep
+  # because they are an affected member or their ancestor
+  keepIDs <- NULL
+  # Loop over affecteds and add their ID and their ancestors' IDs to keepIDs
+  for(i in 1:length(affIDs)){
+    keepIDs <- c(keepIDs,ancestorIDs(affIDs[i],ped))
+  }
+  # remove duplicates
+  keepIDs <- unique(keepIDs)
+  # Use Christina's plot function on the reduced pedigree
+  SimRVPedigree:::plot.ped(ped[ped$ID %in% keepIDs,],cex=cex)
+}
+ancestorIDs <- function(ID,ped){
+  # Start with input (child) ID and then call self on mom and dad.
+  # We will stop the recursion when we reach a founder, which has missing
+  # mom and dad IDs
+  keepIDs <- ID 
+  momID <- ped[ped$ID==ID,"momID"]
+  if(!is.na(momID)) keepIDs <- c(keepIDs,ancestorIDs(momID,ped))
+  dadID <- ped[ped$ID==ID,"dadID"]
+  if(!is.na(dadID)) keepIDs <- c(keepIDs,ancestorIDs(dadID,ped))
+  return(keepIDs)
+}
+```
+
+## Overview of the main code
+
+* In the R code below we initialize variables to hold
 the indices of pedigrees to be excluded. Specifically,
 the variable `morethan6` will hold
 the indices of pedigrees with more than 6 affected
@@ -41,11 +82,13 @@ selection criteria. If a pedigree fails a criterion, it is added to the appropri
 * After the loop is finished, we keep the first 55 of the
 pedigrees that were not excluded.
 
+
+
 ### Aside: An inconsistency in `sim_RVped()`'s output
 
 * Pedigrees are stored as data frames with rows for individuals
 and columns of information on each individual.
-* When working with pedigrees simulated by `sim_RVped()` 
+* When working with pedigrees simulated by `sim_RVped()`, 
 I noticed that the pedigree data structure has two columns
 that indicate affection status. The first is `affected`, which is 
 a logical with `TRUE` for affected individuals, `FALSE` for
@@ -81,7 +124,7 @@ for(i in 1:npeds){
     # ped is read in as a data frame. It also needs to have class "ped"
     # to be plotted.
     class(ped) <-c("ped","data.frame")
-    plot(ped,cex=.4) 
+    plot_affped(ped,cex=.4) 
     # Now start checking the pedigree. First check for missing affection
     # status but non-missing subtype.
     if(any(is.na(ped$affected) & !is.na(ped$subtype))) {
@@ -131,8 +174,10 @@ pool of pedigrees for the simulation study.
 
 ```{r}
 pedpool <- keep[1:npool]
-save(pedpool,file="pedpool.RData")
+write(pedpool,file="Outputfiles/pedpool.txt") 
 ```
+
+* You can read `pedpool.txt` back into R with `pedpool <- scan("pedpool.txt")`
 
 ## Generate the R script for the cluster.
 
