@@ -67,3 +67,4 @@ print(keep)
 ## -----------------------------------------------------------------------------
 pedpool <- keep[1:npool]
 save(pedpool,file="pedpool.RData")
+
