@@ -1,3 +1,33 @@
+## -----------------------------------------------------------------------------
+plot_affped <- function(ped,cex=.4){
+  # Get IDs of affecteds in the pedigrees
+  aff <- ped$affected # may include missing values
+  aff[is.na(aff)] <- FALSE
+  affIDs <- ped$ID[aff]
+  # Initialize a vector of pedigree member IDs we'd like to keep
+  # because they are an affected member or their ancestor
+  keepIDs <- NULL
+  # Loop over affecteds and add their ID and their ancestors' IDs to keepIDs
+  for(i in 1:length(affIDs)){
+    keepIDs <- c(keepIDs,ancestorIDs(affIDs[i],ped))
+  }
+  # remove duplicates
+  keepIDs <- unique(keepIDs)
+  # Use Christina's plot function on the reduced pedigree
+  SimRVPedigree:::plot.ped(ped[ped$ID %in% keepIDs,],cex=cex)
+}
+ancestorIDs <- function(ID,ped){
+  # Start with input (child) ID and then call self on mom and dad.
+  # We will stop the recursion when we reach a founder, which has missing
+  # mom and dad IDs
+  keepIDs <- ID
+  momID <- ped[ped$ID==ID,"momID"]
+  if(!is.na(momID)) keepIDs <- c(keepIDs,ancestorIDs(momID,ped))
+  dadID <- ped[ped$ID==ID,"dadID"]
+  if(!is.na(dadID)) keepIDs <- c(keepIDs,ancestorIDs(dadID,ped))
+  return(keepIDs)
+}
+
 
 ## -----------------------------------------------------------------------------
 set.seed(42)
@@ -19,7 +49,7 @@ for(i in 1:npeds){
     # ped is read in as a data frame. It also needs to have class "ped"
     # to be plotted.
     class(ped) <-c("ped","data.frame")
-    plot(ped,cex=.4)
+    plot_affped(ped,cex=.4)
     # Now start checking the pedigree. First check for missing affection
     # status but non-missing subtype.
     if(any(is.na(ped$affected) & !is.na(ped$subtype))) {
@@ -66,5 +96,4 @@ print(keep)
 
 ## -----------------------------------------------------------------------------
 pedpool <- keep[1:npool]
-save(pedpool,file="pedpool.RData")
-
+write(pedpool,file="Outputfiles/pedpool.txt")
