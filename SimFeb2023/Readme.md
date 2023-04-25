@@ -22,7 +22,8 @@ The pedigree-screening files are:
 
 3. Once we have the founder sequences for the 55 pedigrees we can start doing our simulations. The files for doing simulations under the alternative hypothesis are:
 * **simalt.Rmd**: An Rmarkdown file describing how the R script **simalt.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package. 
-* **simalt.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R sript **cd_new.R**.
+* **simalt.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. 
+    * The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R script **cd_new.R**.
 * **simalt.sh**: The SLURM script to run on the cluster.  To run the script, you can type "SBATCH simalt.sh" from the command line on the cluster.
 
 4. When the simulations under the alternative hypothesis finish on the cluster, copy the output files back to your PC and prepare the summaries for inclusion in our manuscript. The summary file is:
