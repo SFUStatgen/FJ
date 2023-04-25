@@ -9,6 +9,7 @@ This folder contains scripts to resurrect the simulation study in Christina's th
 Once we get the 150 pedigrees, we screen them according to the criteria in Christina's thesis. She only used 55 pedigrees. The screening:
 * checks the 150 simulated pedigrees against the selection criteria in the simulation study of Christina's thesis and 
 * obtains 55 of the eligible pedigrees to work with. 
+
 The pedigree-screening files are:
 * **checkpeds.Rmd**: An Rmarkdown file describing how the R script **checkpeds.R** checks the simulated pedigrees and obtains the 55 we will work with. This Rmarkdown file assumes that you have installed the SimRVPedigree package.
 * **checkpeds.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the SimRVPedigree package in your account on the cluster.
