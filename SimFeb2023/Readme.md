@@ -31,7 +31,8 @@ The pedigree-screening files are:
 
 5. The files for doing simulations under the null hypothesis are:
 * **simnull.Rmd**: An Rmarkdown file describing how the R script **simnull.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package. 
-* **simnull.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R sript **cd_new.R**.
+* **simnull.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. 
+    * The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R sript **cd_new.R**.
 * **simnull.sh**: The SLURM script to run on the cluster.  To run the script, you can type "SBATCH simnull.sh" from the command line on the cluster.
 
 6. When the simulations under the null hypothesis finish on the cluster, copy the output files back to your PC and prepare the summaries for inclusion in our manuscript. The summary file is:
