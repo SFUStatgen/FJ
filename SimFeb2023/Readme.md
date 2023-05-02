@@ -6,7 +6,7 @@ This folder contains scripts to resurrect the simulation study in Christina's th
 * **simrvped.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the SimRVPedigree package in your account on the cluster.
 * **simrvped.sh**: The SLURM script to run an array job on the cluster.  To run the script, you can type "SBATCH simrvped.sh" from the command line on the cluster (appendix A of the group's Workflow document may be helpful to fill in more details).
 
-Once we get the 150 pedigrees, we screen them according to the criteria in Christina's thesis. She used only 55 pedigrees for her pool to sample from. The screening:
+Once we get the 150 pedigrees, we screen them according to the criteria in Christina's thesis. She used only 55 pedigrees in her pool of pedigrees to sample from to make a "study" (comprised of three pedigrees). The screening:
 * checks the 150 simulated pedigrees against the selection criteria in the simulation study of Christina's thesis and 
 * obtains 55 of the eligible pedigrees to work with. 
 
