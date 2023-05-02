@@ -36,8 +36,6 @@ of  chromosome 8 sequences to sample founder sequences from
 ```{r}
 infileDir <- "/project/def-jgraham/FJdata"
 outfileDir <- "/project/def-jgraham/FJdata"
-# for debugging:
-infileDir <- outfileDir <- "Outputfiles"
 ```
 
 * The simulation of 2000 replicate studies is done in batches of N=10, and
