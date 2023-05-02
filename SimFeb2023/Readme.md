@@ -21,16 +21,16 @@ The pedigree-screening files are:
 * **getseqscrvs.sh**: The SLURM script to run on the cluster (not strictly necessary).  To run the script, you can type "SBATCH getseqscrvs.sh" from the command line on the cluster. Assumes that the R data file chromwide.Rdata has been downloaded from Nirodha's Zenodo repository and placed in the same directory.
 
 3. Once we have the founder sequences for the 55 pedigrees we can start doing our simulations. The files for doing simulations under the alternative hypothesis are:
-* **simalt.Rmd**: An Rmarkdown file describing how the R script **simalt.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package. 
-* **simalt.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. 
+* **simalt.Rmd**: An Rmarkdown file describing how the R script **simalt.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package and that the 55 eligible pedigrees and the pool of exome sequences are on the cluster in the `/project/def-jgraham/FJdata` directory. 
+* **simalt.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster and that the 55 eligible pedigrees and the pool of exome sequences are on the cluster in the `/project/def-jgraham/FJdata` directory. 
     * The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R script **cd_new.R**.
 * **simalt.sh**: The SLURM script to run on the cluster.  To run the script, you can type "SBATCH simalt.sh" from the command line on the cluster.
 
 4. When the simulations under the alternative hypothesis finish on the cluster, copy the output files back to your PC and prepare the summaries for inclusion in our manuscript by knitting the Rmarkdown file **simaltSummary.Rmd** 
 
 5. The files for doing simulations under the null hypothesis are:
-* **simnull.Rmd**: An Rmarkdown file describing how the R script **simnull.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package. 
-* **simnull.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster. 
+* **simnull.Rmd**: An Rmarkdown file describing how the R script **simnull.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package and that the 55 eligible pedigrees and the pool of exome sequences are on the cluster in the `/project/def-jgraham/FJdata` directory. 
+* **simnull.R**: The associated R script called by the SLURM script on the Compute Canada cluster. This R script assumes that you have installed the RVMethods package in your account on the cluster and that the 55 eligible pedigrees and the pool of exome sequences are on the cluster in the `/project/def-jgraham/FJdata` directory. 
     * The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R sript **cd_new.R**.
 * **simnull.sh**: The SLURM script to run on the cluster.  To run the script, you can type "SBATCH simnull.sh" from the command line on the cluster.
 
