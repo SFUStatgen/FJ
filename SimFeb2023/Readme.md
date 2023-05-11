@@ -26,7 +26,7 @@ The pedigree-screening files are:
     * The R script calls a function called `cd_new()` to get lookup tables of p-values and test statistics for the five methods we consider. `cd_new()` is based on the function `compute_distributions()` from RVMethods, with modifications to make it more efficient for simulations. The function is documented in the Rmarkdown file **cd_new.Rmd**, with associated R script **cd_new.R**.
 * **simalt.sh**: The SLURM script to run on the cluster.  To run the script, you can type "SBATCH simalt.sh" from the command line on the cluster.
 
-4. When the simulations under the alternative hypothesis finish on the cluster, copy the output files pvalres**i**.csv and rankres**i**.csv for **i**=1..200, back to your PC and prepare the summaries for inclusion in our manuscript by knitting the Rmarkdown file **simaltSummary.Rmd** 
+4. When the simulations under the alternative hypothesis finish on the cluster, copy the output files `pvalres`**i**.`csv` and `rankres`**i**.`csv` for **i**`=1..200`, back to your PC and prepare the summaries for inclusion in our manuscript by knitting the Rmarkdown file **simaltSummary.Rmd** 
 
 5. The files for running simulations under the null hypothesis are:
 * **simnull.Rmd**: An Rmarkdown file describing how the R script **simnull.R** does the simulations. This Rmarkdown file assumes that you have installed the RVMethods package and that the 55 eligible pedigrees and the pool of chromosome 8 exome sequences are on the Compute Canada cluster in the `/project/def-jgraham/FJdata` directory. 
