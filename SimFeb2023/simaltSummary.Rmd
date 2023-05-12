@@ -70,7 +70,7 @@ rankres[,ncol(rankres)] <- as.numeric(rankres[,ncol(rankres)])
 
 
 
-# Exploratory summaries of simulations
+# Summaries of simulations
 
 * Our first set of summaries are meant to explore the data. Exploratory
 summaries give us a feel for the data and can identify errors in the 
@@ -646,7 +646,7 @@ ggsave(rankplot,file="rankres.eps",device="eps")
 
 # Appendix
 
-## Simulation output file format
+## Format of the simulation-output file 
 
 * In both the p-value and ranking output files we include the following 
 columns of information about the study replicate: its replicate number, 
@@ -661,7 +661,7 @@ approaches (local LR, RVS and modified RVS).
     * For the $i^{th}$ carrier probability and $j^{th}$ cRV, the 
     column names are `globalLR`$i$`_`$j$ for the global likelihood
     ratio test and `globaltrans`$i$`_`$j$ for the global transmission test.
-    For the local tests that do not depend on the carrier probability,
+    For the local tests (which do not depend on the carrier probability),
     the column names for the $j^{th}$ cRVs are `localLR_`$j$, `RVS_`$j$ 
     and `modRVS_`$j$, respectively.
     * If there are 
@@ -675,7 +675,7 @@ RVs that were observed in the sample (i.e., the number of RVs the
 cRVs were ranked against).
     * The column to hold the number of RVs per study is `numRV`.
     * For the $i^{th}$ carrier probability and $j^{th}$ cRV, the 
-    column names for the rankings are `globalLR`$i$`_`$j$ for the global likelilihood
+    column names for the rankings are `globalLR`$i$`_`$j$ for the global likelihood
     ratio statistic. For the global transmission statistic and 
     for the local statistics (which do not depend on the carrier probability),
     the column names for the $j^{th}$ cRV are `globaltrans_`$j$,
