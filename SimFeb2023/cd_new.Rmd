@@ -12,7 +12,29 @@ date: "2022-04-22"
 knitr::opts_chunk$set(echo = TRUE,eval=FALSE)
 ```
 
+# Overview
 
+* This .Rmd document is intended to be run on your PC 
+and describes the commands in the `cd_new.R` script that defines
+an R function `cd_new()`. `cd_new()` is a revision of Christina's
+`compute_distributions()` that is more computationally efficient 
+for running simulations with multiple assumed carrier probabilities of the cRV.
+* `cd_new()` is a long function, and the description of its components
+is split across several code chunks in this document. Knitting
+the document will fail because if a code chunk starts a function
+but doesn't finish it, RStudio will exit with an "unexpected end of input" error.
+* To avoid this error, the code
+chunk at the top of this RMarkdown document sets `eval=FALSE`.  
+* The end of the document has a `purl()` command
+that you must manually execute on your PC (i.e., cut-and-paste into the R console)
+to generate the R script `cd_new.R`.
+* After generating `cd_new.R` on your PC, you can source
+it into your R session with `source("cd_new.R")` to get a copy of
+the `cd_new()` function into your PC workspace if you like. 
+* You need to port `cd_new.R` to the Compute Canada 
+cluster so that scripts such as `simalt.R` and `simnull.R`
+can find it when running the simulations.
+    
 # Introduction 
 
 * Christina's project was motivated by a genetic study of lymphoid cancer families at the BC Cancer Agency. In these types of studies, investigators collect families with multiple affected members (so-called **multiplex** families) to increase the chances that a disease-predisposing variant is being transmitted (or segregating) in them. They assume that any disease-predisposing variants are rare and look for rare variants (RVs) shared amongst the affected family members after sequencing their exomes. The assumption that  disease-predisposing variants are rare is justified by the rareness of multiplex families in the population.
@@ -494,7 +516,7 @@ configuration vector, `binID`, to identify the global configurations.
                        "localLR","RVS","modRVS")
   # More convenient for extracting rows to have the lookup tables
   # be matrices rather than data frames.
-  output <- list(statvals=as.matrix(statvals), as.matrix(pvals=pvals))
+  output <- list(statvals=as.matrix(statvals), pvals = as.matrix(pvals))
 ```
 
 ```{r}
@@ -502,7 +524,7 @@ configuration vector, `binID`, to identify the global configurations.
 }
 ```
 
-## Install R packages and call `cd_new()`
+## Install R packages and test `cd_new()`
 
 * We require the `SimRVPedigree`, `SimRVSequences` and `RVMethods`,
 which we can install from Github. `RVMethods` depends on 
@@ -510,7 +532,7 @@ the `gRain` package, which in turn depends on a Bioconductor
 package called `RBGL`.
 * We load an example dataset from a study involving two families
 and the `SimRVPedigree` package for its `ped` data structure. 
-* Finally, we provide a function call to use for testing purposes.
+* Finally, we provide a call to function `cd_new()` for testing purposes.
 * The code in the chunk below is all commented out. Remove the
 comments for testing.
 
@@ -535,22 +557,26 @@ comments for testing.
 # cd_new(peds,subtypes,carrier_probs) #leave remaining arguments at their defaults
 ```
 
-## Bundling code as an R function
+## Generate the R script
 
-*  You can generate an  R script that contains the `cd_new()` function
-by cutting-and-pasting the following into your R console:
+* To create the R script `cd_new.R` to 
+port to the Compute Canada cluster for running simulations, cut-and-paste 
+the following into the R command line on your PC:
 
 ```{r}
-knitr::purl(input="cd_new.Rmd",output="cd_new.R",documentation=0L)
+knitr:: purl(input="cd_new.Rmd",output="cd_new.R")
 ```
 
-* This will produce an R script containing all the code chunks
-in this `Rmd` file. 
-* Alter the resulting R script as follows. Delete the code on the first line
-that sets up `knitr` (i.e., the first code chunk in this `.Rmd` file) as
-well as on line 252 that contains the above `purl()` command.
-* You can now `source("cd_new.R")` into your R session to 
-define the `cd_new()` function.
+* This command will return a file `cd_new.R` that includes every code chunk
+in this file `cd_new.Rmd`, including a code chunk at the very top of the file 
+that sets `knitr` options.
+* Delete the code chunk at the top of `cd_new.R` that sets the `knitr` options 
+and the code chunk on line 252 of `cd_new.R` that contains the `knitr::purl()` command.
+* If you like, you may then `source("cd_new.R")` into the R session on your PC to 
+define the `cd_new()` function there.
+* You should port `cd_new.R` over to the Compute Canada cluster for use
+by the simulation scripts `simalt.R` and `simnull.R`.
+
 
 <!-- * Note: When you open the R script, you *may* find that 
 **all** of the R commands have been commented out with `## ` (two 
