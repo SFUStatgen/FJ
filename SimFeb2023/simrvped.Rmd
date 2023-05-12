@@ -2,20 +2,34 @@
 title: "Simulate pool of pedigrees for simulation study"
 output:
   pdf_document
-date: "2023-01-24"
+date: "2023-05-11"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,eval=FALSE)
 ```
 
-* **NOTE** This .Rmd document describes commands to simulate
-pedigrees in the
-R script `simrvped.R`. Simulating pedigrees is a compute-intensive task that should
-be performed on the Compute Canada cluster.
+# Overview
 
+* **NOTE** This .Rmd document is intended to be run on your PC and 
+describes commands to simulate pedigrees in the
+R script `simrvped.R`. 
+* Simulating pedigrees is a compute-intensive task that should
+be performed on the Compute Canada cluster. 
+* Therefore, the first code
+chunk in this RMarkdown document sets `eval=FALSE` for the entire 
+document, to avoid having the R commands run when you knit on your PC. 
+* At the end of the document there is a `purl()` command
+that you must manually execute on your PC (i.e., cut-and-paste into the R console)
+to generate the R script `simrvped.R`.
+* After generating `simrvped.R` on your PC, port it to the Compute Canada 
+cluster along with the SLURM script `simrvped.sh`. 
+* Then submit the SLURM script to the cluster with the 
+command `sbatch simrvped.sh`.
 
-* First load the `SimRVPedigree` package and a dataset of subtype-specific
+# Task-specific workflow
+
+* We first load the `SimRVPedigree` package and a dataset of subtype-specific
 hazard rates for Hodgkin's and non-Hodgkin's lymphoma.
 
 
@@ -86,7 +100,7 @@ generatePeds(dID)
 
 ## R script for the cluster.
 
-* To create the R script `simrvped.R` for the Compute Canada cluster, cut-and-paste the following into the R command line:
+* To create the R script `simrvped.R` for the Compute Canada cluster, cut-and-paste the following into the R command line on your PC:
 
 ```{r}
 knitr::purl(input="simrvped.Rmd",output="simrvped.R")
@@ -95,3 +109,5 @@ knitr::purl(input="simrvped.Rmd",output="simrvped.R")
 * This command will return a file `simrvped.R` that includes every code chunk in this file `simrvped.Rmd`, including a code chunk at the very top of the file that sets `knitr` options.
 
 * Delete the code chunk at the top of `simrvped.R` that sets the `knitr` options and the code chunk at the bottom that contains the `knitr::purl()` command.
+
+* Then port `simrvped.Rmd` over to the Compute Canada cluster.
