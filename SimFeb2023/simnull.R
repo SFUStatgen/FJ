@@ -70,7 +70,7 @@ for(simrep in 1:N) {
   s_peds$DA1 <- s_peds$DA2 <- NULL
   #------------------------------------------------------------
   # b. generate sequence data with sim_RVstudy() until we get one with a
-  # candidate cRV that is polymorphic in the affecteds.
+  # candidate cRV that is present in the affected individuals.
   foundPoly <- FALSE; genedropcounter<- 0
   while(!foundPoly) {
     genedropcounter <- genedropcounter+1
