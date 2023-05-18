@@ -87,22 +87,22 @@ for(simrep in 1:N) {
   a_seqs <- filter2aff(s_seqs) # *worker*
   numRVs <- nrow(a_seqs$SNV_map)
   #------------------------------------------------------------
-  # c. call cd_new() to get lookup tables of statistics and p-values for
-  # each possible global configurations of affecteds in the study.
+  # c. Call cd_new() to get lookup tables of statistics and p-values for
+  # each possible global configurations of affected individuals in the study.
   lookupTabs = cd_new(peds = s_peds, subtypes = c("HL", "NHL"),
                       carrier_probs = carrier_probs)
-  # The output lookupTabs is a list with elements statvals and pvals
+  # The output lookupTabs is a list with elements statvals and pvals.
   # d. For each familial cRV, find its global configuration. Then find
-  # pvalues and write these to an output file. In the code below we assume
-  # that there are at most three polymorphic markers from our list of
-  # candidate cRVs in a given study. (Turns out there was never more than two.)
+  # pvalues and write these to an output file. In the code below we assume that
+  # that at most three variants from our list of candidate cRVs are present in the
+  # affected individuals of a given study. (Turns out there was never more than two.)
   pvals <- matrix(NA,nrow=3,ncol=3+2*length(carrier_probs))
   polycRVs <- a_seqs$SNV_map$marker[a_seqs$SNV_map$is_CRV]
   for(i in 1:length(polycRVs)) {
     # find base-10 representation of config (what Christina calls "binID")
     binID <- find_binID(polycRVs[i],a_seqs) # *worker*
-    # extract pvals for this config from the lookup tables in lookupTabs
-    # jth pval is in column j+1 of pvals lookup table (binID is in 1st col)
+    # Extract pvals for this config from the lookup tables in lookupTabs.
+    # jth pval is in column j+1 of pvals lookup table (binID is in 1st col).
     pvals[i,] <- lookupTabs$pvals[lookupTabs$pvals[,"binID"]==binID,-1]
   }
   # Write the pval and rank results to their files. Also write info
@@ -119,11 +119,11 @@ for(simrep in 1:N) {
 
 ## -------------------------------------------------------------------------------------
 # read_studypeds() takes a vector if pedigree IDs and reads the
-# pedigrees from their plain-text files
+# pedigrees from their plain-text files.
 read_studypeds <- function(studypedIDs,infileDir){
   for(i in 1:length(studypedIDs)){
     pedfile <- paste0(infileDir,"/ascertained_ped",studypedIDs[i],".txt")
-     # read in pedfile and set object to be of class "ped" and "data.frame"
+     # Read in pedfile and set object to be of class "ped" and "data.frame".
     pp <- read.table(pedfile);class(pp) <- c("ped","data.frame")
     # Set FamID column to the ID of our sampled ped
     pp[,"FamID"] <- studypedIDs[i]
@@ -147,11 +147,11 @@ filter2aff <- function(seqs){
   ped_haplos <- seqs$ped_haplos[seqs$haplo_map$affected,]
   haplo_map <- seqs$haplo_map[seqs$haplo_map$affected,]
   # Next filter variants to those that appear in affected individuals.
-  # The variants appear as columns of ped_haplos, and rows of SNV_map
+  # The variants appear as columns of ped_haplos, and rows of SNV_map.
   cc <- colSums(ped_haplos)
   ped_haplos <- ped_haplos[,cc>0]
   SNV_map <- seqs$SNV_map[cc>0,]
-  # Lastly, pair sequences from individuals into multilocus genotypes
+  # Lastly, pair sequences from individuals into multilocus genotypes.
   odd_inds <- seq(from=1,to=nrow(ped_haplos)-1,by=2)
   even_inds <- seq(from=2,to=nrow(ped_haplos),by=2)
   ped_genos <- ped_haplos[odd_inds,] + ped_haplos[even_inds,]
@@ -166,7 +166,7 @@ find_binID <- function(RV,a_seqs) {
   return(config2binID(config_vec))
 }
 config2binID <- function(config_vec) {
-  # collapse the vector to a string of 0's and 1's and then use
+  # Collapse the vector to a string of 0's and 1's and then use
   # strtoi to convert this base-2 number to an integer.
   return(base::strtoi(paste0(config_vec, collapse = ""), base = 2))
 }
