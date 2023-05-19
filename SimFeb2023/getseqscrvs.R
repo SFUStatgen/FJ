@@ -1,9 +1,3 @@
-
-
-## ----eval=FALSE---------------------------------------------------------------
-## devtools::install_github("https://github.com/simrvprojects/SimRVSequences")
-
-
 ## -----------------------------------------------------------------------------
 library(SimRVSequences)
 load("Chromwide.Rdata")
@@ -18,6 +12,11 @@ library(Matrix) # for sparse matrix functions
 keep <- chr8$Mutations$afreq < 0.001 | chr8$Mutations$afreq > 0.999
 chr8 <- list(Haplotypes=chr8$Haplotypes[,keep],
               Mutations=chr8$Mutations[keep,])
+# Now flip marker alleles where 0 is the minor allele
+swap <- chr8$Mutations$afreq > 0.999
+sum(swap) # only one
+chr8$Haplotypes[,swap] <- 1-chr8$Haplotypes[,swap]
+chr8$Mutations$afreq[swap] <- 1-chr8$Mutations$afreq[swap]
 
 
 ## -----------------------------------------------------------------------------
@@ -51,6 +50,3 @@ chr8$Mutations$is_CRV[setT] <- TRUE # set sampled cRVs to TRUE
 ## -----------------------------------------------------------------------------
 chr8 <- SNVdata(Haplotypes=chr8$Haplotypes,Mutations=chr8$Mutations)
 save(chr8,file="chr8.RData")
-
-
-

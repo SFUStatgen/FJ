@@ -3,7 +3,7 @@ title: "Get sequences and pool of cRVs to sample from"
 output:
   pdf_document:
     number_sections: true
-date: "2023-03-04"
+date: "2023-05-18"
 ---
 
 ```{r, include=FALSE}
@@ -87,13 +87,21 @@ chr8 <- out[[8]]
 * Identify SNVs with population MAF < 0.001. The column `afreq`
 of the `Mutations` element of each chromosome gives the 
 derived allele frequency in the population, 
-which we use to subset the columns of `Haplotypes` and `Mutations`,
+which we use to subset the columns of `Haplotypes` and `Mutations`.
+* We also swap alleles whenever allele `0` is the minor
+allele, so that in future analyses we can assume that `1` 
+is the minor allele.
 
 ```{r}
 library(Matrix) # for sparse matrix functions
 keep <- chr8$Mutations$afreq < 0.001 | chr8$Mutations$afreq > 0.999
 chr8 <- list(Haplotypes=chr8$Haplotypes[,keep],
               Mutations=chr8$Mutations[keep,])
+# Now flip marker alleles where 0 is the minor allele
+swap <- chr8$Mutations$afreq > 0.999 
+sum(swap) # only one
+chr8$Haplotypes[,swap] <- 1-chr8$Haplotypes[,swap]
+chr8$Mutations$afreq[swap] <- 1-chr8$Mutations$afreq[swap]
 ```
 
 ## Determine cRVs from two apoptosis genes on chromosome 8
