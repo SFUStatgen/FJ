@@ -5,7 +5,7 @@ output:
     number_sections: true
     toc: true 
     toc_depth: 3
-date: "2023-05-19"
+date: "2023-05-20"
 ---
 
 ```{r,include=FALSE}
@@ -26,8 +26,8 @@ source("cd_new.R")
 source("workerfuncs.R")
 ```
 
-* Next we read into our R environment the population sequences 
-that we will sample from to create the data. 
+* Next we read into our R environment the population exome sequences 
+that will be sampled to create the data. 
 
 
 ```{r}
@@ -74,7 +74,7 @@ plot(ped3,ref_year=2018,cex=.4)
 ```
 
 
-* Lastly, we simulate sequence data for the pedigrees. 
+* Lastly, we simulate the chromosome 8 sequences for the three pedigrees. 
 
 * We use `sim_RVstudy()` from Christina's `SimRVSequences`
 package. `sim_RVstudy()` takes the study data-frame as 
@@ -96,7 +96,7 @@ s_seqs <- sim_RVstudy(expeds,chr8) # *Christina's*
 a_seqs <- filter2aff(s_seqs) # *worker*
 ```
 
-# Summarize sequence data of the study
+# Summarize the study's sequence data
 
 * I use a modified version of Christina's summary method for objects of class "famStudy"
 (output of `sim_RVstudy`) to get counts 
@@ -114,6 +114,7 @@ twice and three appear three times:
 ```{r}
 total_counts <- rowSums(allele_summary[,c("tot1","tot2","tot3")])
 table(total_counts)
+sum(table(total_counts))
 ```
 
 * To reduce the output, we focus on the RVs that appear more than once 
@@ -194,13 +195,21 @@ RV  & chrom & position & & & & & &  \\
 \caption{Counts of RVs within each pedigree by disease subtype, for RVs that appear in more than one affected individual in the study. Only one RV, 8\_6708389, appears in multiple families.}
 \end{table}
 
-# Analyze the sequence data of the study
+# Analyze the study's sequence data
 
 * We want to prioritize the RVs in our dataset for further
 investigation. To prioritize, we use the value of the
 RV test statistics to rank them with each method.
 We first call `cd_new()` to get lookup 
 tables of the statistic values. 
+* Coding note: As the call to `cd_new()` takes a while,
+we tell RMarkdown to "cache" the results by setting
+the option `cache=TRUE` in the code chunk.  When you
+specify this option RMarkdown will create two folders to hold the 
+cached results in your working directory; in this case the folders
+are `exdatan_files` and `exdatan_cache`. If you remove these
+folders or change the code chunk, RMarkdown will start over
+with the code chunk and rerun it from scratch.
 
 ```{r,cache=TRUE}
 lookupTabs <- cd_new(peds = expeds, subtypes = c("HL", "NHL"),
@@ -208,12 +217,16 @@ lookupTabs <- cd_new(peds = expeds, subtypes = c("HL", "NHL"),
 ```
 
 * All of the statistical methods assume that cRVs enter pedigrees through
-at most one founder. We therefore filter out "invalid" RVs that are not consistent with this assumption. 
+at most one founder. We therefore filter out "invalid" RVs that are not 
+consistent with this assumption. 
 
 
 ```{r}
 a_seqs <- remove_invalid_configs(a_seqs,lookupTabs) # *worker*
+nrow(a_seqs$SNV_map)
 ```
+
+* The above filtering removes 2 of the 74 RVs, leaving 72.
 
 ## Summary of rank results
 
