@@ -5,7 +5,7 @@ output:
     number_sections: true
     toc: true 
     toc_depth: 3
-date: "2023-05-05"
+date: "2023-05-18"
 ---
 
 ```{r setup, include=FALSE}
@@ -25,20 +25,21 @@ postscript file named  `rankres.eps` (saved in this directory).
 data, and do some exploratory
 summaries of the simulation results to get a feel for the 
 data and look for possible errors in the simulation code.
-* **Note:** Other RMarkdown documents in our workflow were written as
-documentation for a corresponding R script that was intended to be run on the 
+* **Note:** Other RMarkdown documents in our workflow are written as
+documentation for a corresponding R script that is intended to be run on the 
 cluster using a SLURM script. By contrast, this RMarkdown document is
 intended to be run, or "knitted" on your PC, and there are no corresponding
-R and SLURM scripts.
+R or SLURM scripts.
 
 # Read in simulation results
 
-* `simalt.R` returns files of p-value results and ranking results.
-* Simulations were run on the Compute Canada cluster as an array of 200 jobs
-each containing 10 studies (of three pedigrees). Results were saved on the cluster in 
+* `simalt.R` returns files of p-value results and ranking results from a simulation study run on the Compute Canada cluster.
+* Simulations for `simalt.R` are run on the cluster as an array of 200 jobs,
+each containing 10 studies (of three pedigrees). Results from 
+`simalt.R` are saved on the cluster in 
 the  `/project/def-jgraham/FJdata` directory. You must first copy the
-results files from the cluster to your PC. There are several options 
-for doing the file transfer that are discussed in Appendix A.1.4 
+results files from the cluster to your PC. Options 
+for transferring files are discussed in Appendix A.1.4 
 of the Graham and McNeney Labs Workflow document. I use the `rsync` method,
 for which I (i) open a terminal on my Mac and set its working directory
 to the directory that contains this .Rmd file, and (ii) run the following 
@@ -50,9 +51,8 @@ rsync -avz jgraham@cedar.computecanada.ca:project/FJdata/ FJdata
 *  p-values to estimate power are in the files `FJdata/pvalresi.csv` 
 for i=1,...,200 and ranking results are in 
 the files `FJdata/rankresi.csv`, for i=1,...,200.
-* The format of the output files was described in `simalt.Rmd` and 
-this description is repeated in the Appendix of this document.
-* We read the results into R in the following code chunk:
+* The format of these p-value and rank output files is described in `simalt.Rmd` and repeated in the Appendix of this document.
+* We read the results into R with the following code chunk:
 
 ```{r}
 njobs <- 200
@@ -69,12 +69,10 @@ rankres[,ncol(rankres)] <- as.numeric(rankres[,ncol(rankres)])
 
 
 
-
 # Summaries of simulations
 
-* Our first set of summaries are meant to explore the data. Exploratory
-summaries give us a feel for the data and can identify errors in the 
-simulation code.
+* Our first set of summaries explore the data. Exploratory
+summaries can identify errors in the simulation code.
 
 ## Sampling of pedigrees
 
@@ -100,13 +98,13 @@ sum(table(peds)) # should be 6000=2000*3.
 
 ## Number of cRVs sampled per study
 
-* There can be 1, 2 or 3 cRVs in the 
-three pedigrees that make a study. How many cRVs were sampled per study
+* Up to 3 cRVs can be in the 
+three pedigrees of a study. How many cRVs were sampled per study
 in our simulated data? 
 * In the code chunk below we find 34 studies with only 1 cRV, 
-612 studies with 2 cRVs and 1359 with 3 cRVs, for a total of
-5320 cRVs over the 2000 simulated studies.
-* In the majority of simulated studies (1359/2000=68%),
+632 studies with 2 cRVs and 1334 with 3 cRVs, for a total of
+5300 cRVs over the 2000 simulated studies.
+* In the majority of simulated studies (1334/2000=67%),
 the pedigrees harbour distinct cRVs.
 
 ```{r}
@@ -140,7 +138,7 @@ load("FJdata/chr8.RData")
 aa <- chr8$Mutations[chr8$Mutations$is_CRV,
                                 c("afreq","SNV")]
 aa$afreq <- aa$afreq/sum(aa$afreq) # normalize pop freqs to conditional pop freqs
-aa <- aa[order(aa$SNV),] # order rows alph by SNV
+aa <- aa[order(aa$SNV),] # order rows of aa by SNV
 aa$empfreq <- empfreq # RVs in empfreq are in same order as in aa
 aa # roughly similar conditional population (afreq) and sample freqs (empfreq)
 ```
@@ -161,9 +159,9 @@ whether Christina's simulation study should have more RVs than ours.
     population of constant size 50,000 diploid individuals. Her simulations yielded an average
     of 120.4 RVs per study with a SD of 15.3.
     * Nirodha's SLiM simulation was much more realistic (see the description 
-    in her Supplementary Materials 1-A document), imposing negative selection
+    in her Supplementary Materials 1-A document), incorporating negative selection
     and an established demographic model for a North American admixed population. The negative selection is expected
-    to lead to *more* RVs than Christina's, but the demographic model would lead to 
+    to lead to *more* RVs than Christina's, but the demographic model should lead to 
     *fewer* RVs, because overall Nirodha's population size is smaller than Christina's. 
     Nirodha's population size was between 15,000 and 30,000 
     individuals from the beginning up to 12 generations ago, before reaching a present-day
@@ -172,15 +170,15 @@ whether Christina's simulation study should have more RVs than ours.
 * I also wondered about any association between the number of
 RVs and the number of sampled cRVs in a study. I look for an association
 informally with boxplots of the number of RVs by the number of cRVs.
-* From the following code chunk we find an average of 84.8 RVs per
-study (SD 12.0) which is smaller than in Christina's study. 
+* From the following code chunk we find an average of 84.2 RVs per
+study (SD 11.9) which is smaller than in Christina's study. 
 The boxplots suggest no association between the number of cRVs and 
 the number of RVs in a study.
 
 ```{r}
 summary(rankres$numRV)
-mean(rankres$numRV) # 84.85, so smaller than Christina's 120.4
-sd(rankres$numRV) # 12.0, also smaller than Christina's 15.3
+mean(rankres$numRV) # 84.2, so smaller than Christina's 120.4
+sd(rankres$numRV) # 11.9, also smaller than Christina's 15.3
 hist(rankres$numRV,nclass=30) # roughly symetric distribution
 boxplot(split(rankres$numRV,numcRVs),varwidth=TRUE, notch=TRUE,
         xlab="number of cRVs",ylab="number of RVs") 
@@ -221,14 +219,14 @@ the numerical summaries.
 ## Power results
 
 * The global LR and global transmission tests depend on the
-value of the carrier probability. Recall that we considered five values,
-leading to five global LR and five global transmission tests.
+value of the carrier probability. We consider seven values,
+leading to seven global LR and seven global transmission tests.
 In addition there are the three local tests (local LR, RVS and
-modified RVS) for a total of 13 tests.
+modified RVS) for a total of 17 tests.
 
 ```{r}
 true_carrier_prob <- 0.00032
-carrier_probs <- true_carrier_prob*c(1/10,1/2,1,2,10)
+carrier_probs <- true_carrier_prob*c(1/100,1/10,1/2,1,2,10,100)
 tests <- c(paste0("globalLR",1:length(carrier_probs)),
            paste0("globaltrans",1:length(carrier_probs)),
            "localLR","RVS","modRVS")
@@ -286,9 +284,9 @@ se <- function(x) {
 
 ### Power of tests of all cRVs 
 
-* Recall from the summaries of the number of cRVs per study 
-that we sampled 5320 cRVs over the 2000 studies.
-The estimated power of the tests of all 5320 cRVs is as follows.
+* Recall
+that we have sampled 5300 cRVs over the 2000 studies.
+The estimated power of the tests of all 5300 cRVs follows.
 
 ```{r}
 round(powerres(pall),3)
@@ -352,14 +350,16 @@ carrier probabilities.)
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
-Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
+Factor$^*$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
 NA & & e & e & e &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & e & e \\
-$0.000160$& & -- & -- & -- &  & e & e \\
-$0.000320^*$& & -- & -- & -- &  & e & e \\
-$0.000640$& & -- & -- & -- &  & e & e \\
-$0.003200$& & -- & -- & -- &  & e & e \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+1/100& & -- & -- & -- &  & e & e \\
+1/10& & -- & -- & -- &  & e & e \\
+1/2& & -- & -- & -- &  & e & e \\
+1& & -- & -- & -- &  & e & e \\
+2& & -- & -- & -- &  & e & e \\
+10& & -- & -- & -- &  & e & e \\
+100& & -- & -- & -- &  & e & e \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$}
 \end{tabular}
 \end{table}
 \end{verbatim}
@@ -368,18 +368,20 @@ $0.003200$& & -- & -- & -- &  & e & e \\ \hline
 
 \begin{table}[ht]
 \centering
-\caption{Estimated power (SE), all cRVs (5320 assessed in total)}
+\caption{Estimated power (SE), all cRVs (5300 assessed in total)}
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
-Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
-NA & & 0.676 (0.006) & 0.766 (0.005) & 0.758 (0.006) &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & 0.837 (0.005) & 0.830 (0.005) \\
-$0.000160$& & -- & -- & -- &  & 0.836 (0.005) & 0.830 (0.005) \\
-$0.000320^*$& & -- & -- & -- &  & 0.834 (0.005) & 0.829 (0.005) \\
-$0.000640$& & -- & -- & -- &  & 0.833 (0.005) & 0.828 (0.005) \\
-$0.003200$& & -- & -- & -- &  & 0.823 (0.005) & 0.821 (0.005) \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+Factor$^*$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
+NA & & 0.692 (0.006) & 0.759 (0.006) & 0.758 (0.006) &    & -- & -- \\
+1/100& & -- & -- & -- &  & 0.835 (0.005) & 0.831 (0.005) \\
+1/10& & -- & -- & -- &  & 0.834 (0.005) & 0.831 (0.005) \\
+1/2& & -- & -- & -- &  & 0.832 (0.005) & 0.831 (0.005) \\
+1& & -- & -- & -- &  & 0.832 (0.005) & 0.831 (0.005) \\
+2& & -- & -- & -- &  & 0.832 (0.005) & 0.830 (0.005) \\
+10& & -- & -- & -- &  & 0.822 (0.005) & 0.824 (0.005) \\
+100& & -- & -- & -- &  & 0.429 (0.006) & 0.733 (0.006) \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 
@@ -390,69 +392,74 @@ $0.003200$& & -- & -- & -- &  & 0.823 (0.005) & 0.821 (0.005) \\ \hline
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
 Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
-NA & & 0.966 (0.004) & 0.991 (0.002) & 0.985 (0.003) &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & 0.992 (0.002) & 0.993 (0.002) \\
-$0.000160$& & -- & -- & -- &  & 0.992 (0.002) &  0.993 (0.002)\\
-$0.000320^*$& & -- & -- & -- &  & 0.992 (0.002) & 0.992 (0.002) \\
-$0.000640$& & -- & -- & -- &  & 0.992 (0.002) & 0.992 (0.002) \\
-$0.003200$& & -- & -- & -- &  & 0.992 (0.002) & 0.992 (0.002) \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+NA & &  0.977 (0.003) &  0.992 (0.002) & 0.989 (0.002) &    & -- & -- \\
+1/100& & -- & -- & -- &  & 0.997 (0.001) & 0.996 (0.001) \\
+1/10& & -- & -- & -- &  &0.997 (0.001) &  0.996 (0.001) \\
+1/2& & -- & -- & -- &  & 0.997 (0.001) &  0.996 (0.001) \\
+1& & -- & -- & -- &  &  0.997 (0.001) &  0.996 (0.001) \\
+2& & -- & -- & -- &  &  0.997 (0.001) &  0.996 (0.001) \\
+10& & -- & -- & -- &  & 0.996 (0.001) &  0.995 (0.002) \\
+100& & -- & -- & -- &  &  0.809 (0.009) &  0.984 (0.003) \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 
 \begin{table}[ht]
 \centering
-\caption{Estimated power (SE), second-ranked cRV (1971 in total)}
+\caption{Estimated power (SE), second-ranked cRV (1966 in total)}
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
 Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
-NA & & 0.670 (0.011) & 0.801 (0.009) & 0.785 (0.009) &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & 0.885 (0.007) & 0.874 (0.007) \\
-$0.000160$& & -- & -- & -- &  & 0.885 (0.007) & 0.874 (0.007) \\
-$0.000320^*$& & -- & -- & -- &  & 0.883 (0.007) & 0.874 (0.007) \\
-$0.000640$& & -- & -- & -- &  & 0.883 (0.007) & 0.872 (0.007) \\
-$0.003200$& & -- & -- & -- &  & 0.871 (0.008) & 0.866 (0.008) \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+NA & & 0.686 (0.010) & 0.786 (0.009) & 0.785 (0.009) &    & -- & -- \\
+1/100& & -- & -- & -- &  & 0.872 (0.007) & 0.874 (0.007) \\
+1/10& & -- & -- & -- &  & 0.872 (0.007) & 0.874 (0.007) \\
+1/2& & -- & -- & -- &  & 0.872 (0.007) & 0.873 (0.007) \\
+1& & -- & -- & -- &  & 0.870 (0.008) & 0.873 (0.007) \\
+2& & -- & -- & -- &  & 0.871 (0.007) & 0.873 (0.007) \\
+10& & -- & -- & -- &  & 0.862 (0.008) &  0.865 (0.008) \\
+100& & -- & -- & -- &  & 0.291 (0.010) & 0.742 (0.010) \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 
 \begin{table}[ht]
 \centering
-\caption{Estimated power (SE), third-ranked cRV (1359 in total)}
+\caption{Estimated power (SE), third-ranked cRV (1334 in total)}
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
 Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
-NA & & 0.256 (0.010) & 0.385 (0.011) & 0.383 (0.011) &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & 0.538 (0.011) & 0.526 (0.011) \\
-$0.000160$& & -- & -- & -- &  & 0.535 (0.011) & 0.525 (0.011) \\
-$0.000320^*$& & -- & -- & -- &  & 0.530 (0.011) & 0.524 (0.011) \\
-$0.000640$& & -- & -- & -- &  & 0.529 (0.011) & 0.523 (0.011) \\
-$0.003200$& & -- & -- & -- &  & 0.505 (0.011) & 0.503 (0.011) \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+NA & & 0.273 (0.010) & 0.371 (0.011) & 0.373 (0.011) &    & -- & -- \\
+1/100& & -- & -- & -- &  & 0.535 (0.011) & 0.522 (0.011) \\
+1/10& & -- & -- & -- &  & 0.533 (0.011) & 0.522 (0.011) \\
+1/2& & -- & -- & -- &  & 0.528 (0.011) & 0.522 (0.011) \\
+1& & -- & -- & -- &  & 0.528 (0.011) & 0.520 (0.011) \\
+2& & -- & -- & -- &  & 0.527 (0.011) & 0.519 (0.011) \\
+10& & -- & -- & -- &  & 0.503 (0.011) & 0.506 (0.011) \\
+100& & -- & -- & -- &  & 0.063 (0.005) & 0.343 (0.011) \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 
-
-* The following conclusions apply to the power estimated from 
-the tests of all the cRVs in a study as well as the 
-tests of the cRVs with the smallest, second smallest and 
-third smallest p-values in a study.
-* The estimated power of the global tests (LR and transmission)
-is very similar for all values of the carrier probability $p_c$, 
-suggesting that the methods are robust to the choice of  $p_c$.
-    - There is some suggestion that the power of the global tests
-    may even be slightly improved by under-specifying the value of
-    $p_c$.
-* The estimated power of the global LR test is similar to the estimated 
-power of the global transmission test, and both are 
-larger than the estimated power of the local tests 
-(local LR, RVS and modified RVS).
-* The estimated power of the local LR test is similar to the estimated
-power of the modified RVS test, and both are larger than the 
-estimated power of the RVS test which is as expected the worst of the five tests
-(because it doesn't account for two subtypes).
+* We conclude the following about the estimated power.
+* Global methods are robust to mis-specification of the carrier probability
+except when the carrier probability is substantially overspecified 
+(i.e. more than 10 times larger than the true value). In particular,
+overspecifying the carrier probability to be 100 times too large leads 
+to a conservative test with lower power, especially for the global LR test.
+* The estimated power of the global LR and transmission tests 
+are similar, except when the carrier probability is substantially 
+overspecified. In particular, when the carrier probability is specified
+to be 100 times larger than its true value, the global LR test 
+has lower power than the transmission test.
+* Both tests have larger estimated power than the local tests 
+(local LR, RVS and modified RVS) except when the value
+of the carrier probability is substantially overspecified.
+* The estimated power of the local LR and modified RVS tests are
+similar, and both are larger than the 
+estimated power of the RVS test which as expected has the lowest
+power (because it wasn't developed to account for disease subtypes).
 
 
 ## Ranking results
@@ -542,9 +549,8 @@ virtually identical across all the values of $p_c$.
 * The numerical summaries are difficult to compare and interpret.
 To help with interpretation, we graphically compare the ranking methods. 
 * Since the summary statistics for the global LR methods are nearly identical
-across values of the carrier probability (see the Appendix), we selected the global LR
-method with the value of $p_c=0.00032$ used to simulate the data as a representative
-on the plots.
+across all but the largest value of the carrier probability (see the Appendix), we selected the global LR
+method with the value of $p_c=0.00032$ used to simulate the data as a representative on the plots.
 * Coding notes: We use `ggplot()` to do the plotting with 
 the study-specific average, smallest, second-smallest and third-smallest
 normalized ranking results in separate panels.
@@ -610,17 +616,19 @@ ggplot(plotlong,aes(x=statistic,y=rank)) + stat_summary(
 
 * The following conclusions apply to the results on the average-rank,
 top-rank, second-rank and third-rank results.
-* The rankings based on the global LR statistic are very similar
-across specified values of the carrier probability $p_c$.
+* The rankings based on the global LR statistic are similar
+across specified values of the carrier probability $p_c$ except
+for 100 times the true value.
 * The summary statistics of the global LR and global transmission rankings 
-are very similar to each other.
-* The local LR approach is surprisingly good at ranking, being almost identical 
-to the global approaches and possibly even slightly better; e.g., 
+are similar to each other except when the specified value of the carrier
+probability is 100 times its true value.
+* The local LR approach is consistently good at ranking, being almost identical 
+to the best of the global approaches and possibly even slightly better; e.g., 
 slightly lower median rank.
 * The LR-based methods appear to rank better (e.g., smaller median rank)
 than the RVS and modified RVS approaches.
-* As expected, the RVS approach is the worst of the five ranking methods considered 
-because it does not take into account the disease subtypes.
+* As expected, the RVS approach has the poorest ranking performance among 
+the methods (because it was not developed with disease subtypes in mind). 
 * The modified RVS approach can account for disease subtypes and performs better
 than the naive RVS approach but not as well as the likelihood approaches.
 

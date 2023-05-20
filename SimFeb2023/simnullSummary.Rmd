@@ -5,7 +5,7 @@ output:
     number_sections: true
     toc: true 
     toc_depth: 3
-date: "2023-05-12"
+date: "2023-05-18"
 ---
 
 ```{r setup, include=FALSE}
@@ -35,8 +35,8 @@ containing 10 studies (of three pedigrees).
 the  `/project/def-jgraham/FJdata` directory. 
 * To use this script, you must first copy the
 results files from the cluster to your PC. 
-* Several options for transferrin the results files to your PC
-are discussed in Appendix A.1.4  of the Lab's Workflow document. 
+* Several options for transferring the results files to your PC
+are discussed in Appendix A.1.4 of the Lab's Workflow document. 
 * I use the `rsync` method,
 for which I (i) open a terminal on my Mac and set its working directory
 to be the directory that contains this .Rmd file, and (ii) run the following 
@@ -83,15 +83,15 @@ sum(table(peds)) # Should be 6000=2000*3.
 
 * For the paper we require estimated type-1 error rates for each test.
 * The global LR and global transmission tests depend on the
-value of the carrier probability. Recall that we considered five values
+value of the carrier probability. Recall that we considered seven values
 of the carrier probability,
-leading to five global LR and five global transmission tests.
+leading to seven global LR and seven global transmission tests.
 In addition there are the three local tests (local LR, RVS and
 modified RVS) that don't depend on the carrier probability, for a total of 13 tests.
 
 ```{r}
 true_carrier_prob <- 0.0032
-carrier_probs <- true_carrier_prob*c(1/10,1/2,1,2,10)
+carrier_probs <- true_carrier_prob*c(1/100,1/10,1/2,1,2,10,100)
 tests <- c(paste0("globalLR",1:length(carrier_probs)),
            paste0("globaltrans",1:length(carrier_probs)),
            "localLR","RVS","modRVS")
@@ -110,8 +110,15 @@ cRVs are distinguished by the suffix `_1` for the first,
     p-values are `NA`.
     * Note: Of the 2000 simulated studies, 1996 had only one observed candidate 
     cRV, four had two observed candidate cRVs and none of the simulated
-    studies had three observed candidate cRVs. Thus, there were 2004
-    candidate cRVs tested in total.
+    studies had three observed candidate cRVs. Thus, 2004
+    candidate cRVs in total were tested. 
+
+```{r}
+# number of candidate cRVs in a study is the number of non-missing cRV IDs
+cRV_IDs <- pvalres[,c("cRV_1","cRV_2","cRV_3")]
+numcRVs <- apply(cRV_IDs,1,function(x) sum(!is.na(x)))
+table(numcRVs)
+```
     
 * For a given test, the estimated type-1 error rate is the proportion
 of the 2004 candidate-cRV tests that reject the null hypothesis.
@@ -148,13 +155,13 @@ round(type1errres(pall),3)
 ## Comments on results
 
 * Type-1 error appears to be controlled at the 5\% level for all tests.
-* The estimated type-1 error rate of the local LR and RVS methods is
-more than 2 SEs below 0.05, so these methods appear to be conservative.
-* The estimated type-1 error rate of the global tests (LR and transmission)
-is quite similar across most values of the carrier probability $p_c$, but
-is more than 2 SEs below 0.05 (i.e., is conservative) when the carrier probability 
-is misspecified at 10-times its true value.
-
+* However, all tests but the modified RVS appear to be conservative.
+    * In particular, the LR tests (local LR, global LR and global transmission) 
+and the RVS test have estimated type-1 error rates at 3 or more SEs  
+below 0.05.
+* The estimated type-1 error rates of the global tests (LR and transmission)
+are similar across assumed values of the carrier probability within
+10 times or less of the true carrier probability. 
 
 ## LaTeX table of results
 
@@ -165,22 +172,22 @@ LaTeX-formatted table similar to the table in Christina's thesis.
     cells of the table filled in by cutting-and-pasting from the R output.
 
 \footnotesize
-
-\begin{verbatim}   
+\begin{verbatim}
 \begin{table}
-\centering
-\caption{Template}
+\caption{Template table}
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
-Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
+Factor$^*$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
 NA & & e & e & e &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & e & e \\
-$0.000160$& & -- & -- & -- &  & e & e \\
-$0.000320^*$& & -- & -- & -- &  & e & e \\
-$0.000640$& & -- & -- & -- &  & e & e \\
-$0.003200$& & -- & -- & -- &  & e & e \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+1/100& & -- & -- & -- &  & e & e \\
+1/10& & -- & -- & -- &  & e & e \\
+1/2& & -- & -- & -- &  & e & e \\
+1& & -- & -- & -- &  & e & e \\
+2& & -- & -- & -- &  & e & e \\
+10& & -- & -- & -- &  & e & e \\
+100& & -- & -- & -- &  & e & e \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 \end{verbatim}
@@ -188,18 +195,20 @@ $0.003200$& & -- & -- & -- &  & e & e \\ \hline
 
 \begin{table}[ht]
 \centering
-\caption{Estimated type-1 error rate (SE), all tested RVs (1002 in total)}
+\caption{Estimated type-1 error rate (SE), all tested RVs (2004 in total)}
 \begin{tabular}{lccccccc}
        & & \multicolumn{6}{c}{Method} \\ \cline{3-8}
        & & \multicolumn{3}{c}{Local} & & \multicolumn{2}{c}{Global} \\ \cline{3-5} \cline{7-8}
-Assumed $p_c$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
-NA & & 0.039 (0.003) & 0.049 (0.003) & 0.033 (0.002) &    & -- & -- \\
-$0.000032$& & -- & -- & -- &  & 0.046 (0.003) & 0.046 (0.003) \\
-$0.000160$& & -- & -- & -- &  & 0.045 (0.003) & 0.046 (0.003) \\
-$0.000320^*$& & -- & -- & -- &  & 0.045 (0.003) & 0.046 (0.003) \\
-$0.000640$& & -- & -- & -- &  & 0.045 (0.003) & 0.046 (0.003) \\
-$0.003200$& & -- & -- & -- &  & 0.041 (0.003) & 0.043 (0.003) \\ \hline
-\multicolumn{8}{l}{$^*$ True carrier probability is $p_c = 0.000320$}
+Factor$^*$ & & RVS & ModRVS & LR &   & LR & Transm. \\ \hline
+NA & & 0.041 (0.003) & 0.052 (0.003) & 0.028 (0.002) &    & -- & -- \\
+1/100& & -- & -- & -- &  & 0.037 (0.002) & 0.035 (0.002) \\
+1/10& & -- & -- & -- &  & 0.037 (0.002) & 0.035 (0.002) \\
+1/2& & -- & -- & -- &  & 0.036 (0.002) & 0.035 (0.002) \\
+1& & -- & -- & -- &  & 0.036 (0.002) & 0.034 (0.002) \\
+2& & -- & -- & -- &  & 0.036 (0.002) & 0.034 (0.002) \\
+10& & -- & -- & -- &  & 0.033 (0.002) & 0.033 (0.002) \\
+100& & -- & -- & -- &  & 0.007 (0.001) & 0.024 (0.002) \\ \hline
+\multicolumn{8}{l}{$^*$ Assumed carrier probability is factor times true value $p_c = 0.000320$.}
 \end{tabular}
 \end{table}
 
