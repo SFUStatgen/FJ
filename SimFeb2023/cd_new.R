@@ -1,7 +1,11 @@
+
+## ----------------------------------------------------------------------------------------------
 cd_new <-  function(peds, subtypes,carrier_probs,
                     tau_increment=0.05,subtype_weights=NULL,useK=FALSE){
 
 
+
+## ----------------------------------------------------------------------------------------------
   tau_grid <- RVMethods:::make_tauGrid(increment_width = tau_increment, constrained = TRUE)
   study_FamIDs <- unique(peds$FamID)
   famIndex <- c(1:length(study_FamIDs)) # indices of family IDs
@@ -17,10 +21,14 @@ cd_new <-  function(peds, subtypes,carrier_probs,
     fam_likeGrids[[i]] <- uncond2cond(fam_likeGrids[[i]],ped,carrier_probs[1])
   }
 
+
+## ----------------------------------------------------------------------------------------------
   fam_likeGrids <- lapply(fam_likeGrids, function(x){
     RVMethods:::remove_invalidConfigs(x)
   })
 
+
+## ----------------------------------------------------------------------------------------------
   D1_global_sharing_byBinID <- list() # list for global LR, will be one list item per p_c
   D2_global_sharing_byBinID <- list() # list for global transm,  ditto
   flg <- list()
@@ -51,6 +59,8 @@ cd_new <-  function(peds, subtypes,carrier_probs,
                                                        famID_index = famIndex,
                                                        tau_grid)
 
+
+## ----------------------------------------------------------------------------------------------
   fam_configs <- list()
   # Find configurations for each family:
   for(i in famIndex){
@@ -64,6 +74,8 @@ cd_new <-  function(peds, subtypes,carrier_probs,
   # are the global configs and the columns are the affecteds in the study.
   fam_configs <- do.call(cbind, fam_configs)
 
+
+## ----------------------------------------------------------------------------------------------
   # Global LR: collect LR stats, null probs and calculate p-values.
   # First initialize w/ fam configs, taus and K.
   global_dist <- cbind(fam_configs,
@@ -204,32 +216,41 @@ cd_new <-  function(peds, subtypes,carrier_probs,
     base::strtoi(paste0(x, collapse = ""), base = 2)
   })
 
+
+## ----------------------------------------------------------------------------------------------
   global_stats <- paste0("LR",1:length(carrier_probs))
   global_pvals <- paste0("LR_pvalue",1:length(carrier_probs))
-    statvals <- cbind(global_dist$binID,  # same ID in all three d.f.s
+    statvals <- cbind(global_dist$binID, # same ID in all three d.f.s
                     global_dist[,global_stats],
                     semiglobal_dist[,"LR"], # same for all carrier probs
                     condsemiglobal_dist[,"LR"],
                     1/condsemiglobal_dist[,"RVS_pvalue"], # inverse of prob
                     1/condsemiglobal_dist[,"modRVS_pvalue"]) # inverse of prob
-  names(statvals) <- c("binID",paste0("globalLR",1:length(carrier_probs)),
+  names(statvals) <- c("binID",
+                        paste0("globalLR",1:length(carrier_probs)),
                        "globaltransLR","localLR","RVS","modRVS")
-  pvals <- cbind(global_dist$binID,  # same ID in all three d.f.s
+  pvals <- cbind(global_dist$binID, # same in all three d.f.s
                  global_dist[,global_pvals],
                  semiglobal_dist[,global_pvals],
                  condsemiglobal_dist[,"LR_pvalue"],
                  condsemiglobal_dist[,"RVS_pvalue"],
                  condsemiglobal_dist[,"modRVS_pvalue"])
-  names(pvals) <- c("binID",paste0("globalLR",1:length(carrier_probs)),
+  names(pvals) <- c("binID",
+                       paste0("globalLR",1:length(carrier_probs)),
                        paste0("globaltrans",1:length(carrier_probs)),
                        "localLR","RVS","modRVS")
   # More convenient for extracting rows to have the lookup tables
   # be matrices rather than data frames.
-  output <- list(statvals=as.matrix(statvals), pvals = as.matrix(pvals))
+  output <- list(statvals=as.matrix(statvals), pvals = as.matrix(pvals),
+                 binKey = colnames(fam_configs))
 
+
+## ----------------------------------------------------------------------------------------------
   return(output)
 }
 
+
+## ----------------------------------------------------------------------------------------------
 # install.packages("devtools")
 # library(devtools)
 # install_github("https://github.com/simrvprojects/SimRVPedigree")
@@ -249,6 +270,8 @@ cd_new <-  function(peds, subtypes,carrier_probs,
 # # Call cd_new()
 # cd_new(peds,subtypes,carrier_probs) #leave remaining arguments at their defaults
 
+
+## ----------------------------------------------------------------------------------------------
 uncond2cond <- function(fam_likeGrid,ped,carrier_prob) {
   like_mat <- fam_likeGrid$like_mat
   num_found = length(unique(ped$ID[which(is.na(ped$dadID) & is.na(ped$momID))]))
@@ -272,3 +295,4 @@ cond2uncond <- function(fam_likeGrid,ped,carrier_prob) {
   fam_likeGrid$like_mat <- like_mat
   return(fam_likeGrid)
 }
+

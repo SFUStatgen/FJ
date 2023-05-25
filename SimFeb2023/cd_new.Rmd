@@ -480,8 +480,7 @@ results for (i) the global LR, (ii) transmission and (iii) the
 local methods. The `compute_distributions()` data frames include the statistic values and
 p-values we need, but also other information about the configuration
 that we don't need for our simulation study (e.g. the corresponding 
-MLEs of the two transmission probabilities, the binary configuration vector
-which is already expressed in base-10 as the `binID`, the number of 
+MLEs of the two transmission probabilities,  the number of 
 affected individuals who carry the RV for the configuration, and
 separate numerator and denominator of each of the three LR statistics). For us, splitting the results across three data frames 
 is awkward.
@@ -493,30 +492,36 @@ method (columns).
 In both matrices we use the 
 compact base10 representation of the binary
 configuration vector, `binID`, to identify the global configurations. 
+* We also return a "key" that tells us the order of affected individuals
+in the configurations. This allows us to translate `binID`s to 
+configurations. The key is the column names of the `fam_configs` matrix.
 
 ```{r}
   global_stats <- paste0("LR",1:length(carrier_probs))
   global_pvals <- paste0("LR_pvalue",1:length(carrier_probs))
-    statvals <- cbind(global_dist$binID,  # same ID in all three d.f.s
+    statvals <- cbind(global_dist$binID, # same ID in all three d.f.s
                     global_dist[,global_stats],
                     semiglobal_dist[,"LR"], # same for all carrier probs
                     condsemiglobal_dist[,"LR"],
                     1/condsemiglobal_dist[,"RVS_pvalue"], # inverse of prob
                     1/condsemiglobal_dist[,"modRVS_pvalue"]) # inverse of prob
-  names(statvals) <- c("binID",paste0("globalLR",1:length(carrier_probs)),
+  names(statvals) <- c("binID",
+                        paste0("globalLR",1:length(carrier_probs)),
                        "globaltransLR","localLR","RVS","modRVS")
-  pvals <- cbind(global_dist$binID,  # same ID in all three d.f.s
+  pvals <- cbind(global_dist$binID, # same in all three d.f.s
                  global_dist[,global_pvals],
                  semiglobal_dist[,global_pvals],
                  condsemiglobal_dist[,"LR_pvalue"],
                  condsemiglobal_dist[,"RVS_pvalue"],
                  condsemiglobal_dist[,"modRVS_pvalue"])
-  names(pvals) <- c("binID",paste0("globalLR",1:length(carrier_probs)),
+  names(pvals) <- c("binID", 
+                       paste0("globalLR",1:length(carrier_probs)),
                        paste0("globaltrans",1:length(carrier_probs)),
                        "localLR","RVS","modRVS")
   # More convenient for extracting rows to have the lookup tables
   # be matrices rather than data frames.
-  output <- list(statvals=as.matrix(statvals), pvals = as.matrix(pvals))
+  output <- list(statvals=as.matrix(statvals), pvals = as.matrix(pvals),
+                 binKey = colnames(fam_configs))
 ```
 
 ```{r}
@@ -564,7 +569,7 @@ port to the Compute Canada cluster for running simulations, cut-and-paste
 the following into the R command line on your PC:
 
 ```{r}
-knitr:: purl(input="cd_new.Rmd",output="cd_new.R")
+knitr:: purl(input="cd_new2.Rmd",output="cd_new2.R")
 ```
 
 * This command will return a file `cd_new.R` that includes every code chunk
