@@ -569,7 +569,7 @@ port to the Compute Canada cluster for running simulations, cut-and-paste
 the following into the R command line on your PC:
 
 ```{r}
-knitr:: purl(input="cd_new2.Rmd",output="cd_new2.R")
+knitr:: purl(input="cd_new.Rmd",output="cd_new.R")
 ```
 
 * This command will return a file `cd_new.R` that includes every code chunk
