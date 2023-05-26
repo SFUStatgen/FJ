@@ -54,8 +54,8 @@ carrier_probs <- true_carrier_prob*c(1/100,1/10,1/2,1,2,10,100)
 we can re-create the pedigree data structures in a CSV
 file and read that into an R data frame called `expeds`. 
 Pedigrees are distinguished by a `FamID` variable in the data frame.
-* To plot a pedigree, we select it from `expeds` and
-coerce it to class `ped`. We hide the RV status in the pedigree 
+* To plot a pedigree, we select it from `expeds`. 
+We hide the RV status in the pedigree 
 plots by setting the RV status variables `DA1` and `DA2` in 
 the pedigree data structure to `NULL`.
 
@@ -172,9 +172,9 @@ affected individuals of the study.
 RV  & chrom & position & & & & & &  \\ 
   \hline
 % Table body starts here
-8\_6708389 & 8 & 6708389 & 1 & 0 & 0 & 1 & 0 & 0 \\ 
-  8\_7972232 & 8 & 7972232 & 0 & 0 & 0 & 2 & 0 & 0 \\ 
-  8\_8376739 & 8 & 8376739 & 1 & 1 & 0 & 0 & 0 & 0 \\ 
+  8\_6708389 & 8 & 6708389   & 1 & 0 & 0 & 1 & 0 & 0 \\ 
+  8\_7972232 & 8 & 7972232   & 0 & 0 & 0 & 2 & 0 & 0 \\ 
+  8\_8376739 & 8 & 8376739   & 1 & 1 & 0 & 0 & 0 & 0 \\ 
   8\_12116292 & 8 & 12116292 & 0 & 0 & 2 & 0 & 0 & 0 \\ 
   8\_23020454 & 8 & 23020454 & 0 & 2 & 0 & 0 & 0 & 0 \\ 
   8\_23068413 & 8 & 23068413 & 0 & 0 & 0 & 2 & 0 & 0 \\ 
@@ -230,13 +230,31 @@ nrow(a_seqs$SNV_map)
 
 ## Summary of rank results
 
-* We rank each RV in our filtered dataset using the value of
+* We use the global configurations of the RVs from the lookup tables
+    returned by the `cd_new()` function. 
+    
+* The ordering of the affected individuals in these configurations 
+does not match the ordering of the affected individuals in the rows 
+of the genotypes matrix derived from Christina's `sim_RVstudy()` function. 
+
+* We must therefore reorder the rows of the genotype matrix to match the 
+order of the affected individuals in the configurations of the lookup table.
+
+* The order of affected individuals in the global configurations is contained in the variable `binKey` returned by `cd_new()`.
+
+* We use `binKey` and the worker function `reorder_genos()` to reorder the rows of the genotype matrix.
+
+```{r}
+a_seqs <- reorder_genos(a_seqs,lookupTabs$binKey) 
+```
+
+* Now we are ready to rank each RV in our filtered dataset using the value of
 the test statistics for its global configuration.
+
 * The ranks from the first six global LR methods, with assumed
 carrier probabilities of 1/100, 1/10, 1/2, 1, 2 and 10 times
 the true value, are all identical and are represented 
 by the variable `globalLR1to6` in the following code.
-
 ```{r}
 RVs <- a_seqs$SNV_map$marker
 is_CRV <- a_seqs$SNV_map$is_CRV
@@ -293,12 +311,10 @@ allele_summary[rownames(allele_summary) %in% cRVs,]
 ```
 
 * We see three cRVs, each of which is unique to a pedigree.
-* The cRV 8_23020454 from pedigree 1 had a top-10 rank from all methods.
-From the pedigree diagram we see that this 
-RV is in two HL-affected individuals who are second cousins.
-* The cRV 8_23068413 from pedigree 2 had a top-10 rank from the LR methods
-only. From the pedigree diagram we see that 
-this RV is in two HL-affected individuals who are first cousins.
+* The cRVs 8_23020454 from family 1 and cRV 8_23068413 from family 2 had 
+top-10 ranks from all methods. From the diagram we see that these cRVs are 
+in two HL-affected individuals who are second cousins (8_23020454, family 1) 
+and first cousins (8_23068413, family 2), respectively. 
 * The cRV 8_118923860 from pedigree 3 did not have a top-10 ranking
 from any of the methods. This RV is only observed
 in one HL-affected individual.
@@ -321,11 +337,10 @@ pvals
 
 * The cRVs 8_23020454 (from ped 1) and 8_23068413 (from ped 2) were 
 observed in two HL-affected
-individuals and have reasonably small p-values (e.g., 0.043 and 0.017,
+individuals and have reasonably small p-values (e.g., 0.0056 and 0.0174,
 respectively by the global methods).
 * The cRV 8_118923860 was observed in only one affected individual in 
-pedigree 3 and so, not surprisingly, has large p-values (about 0.35
-by the global methods) and ranks (about 0.44 by the LR methods).
+pedigree 3 and so, not surprisingly, has large p-values ($>0.31$).
 
 # Appendix: Worker functions
 
@@ -368,7 +383,7 @@ remove_invalid_configs <- function(a_seqs,lookupTabs) {
 }
 ```
 
-* The second function written for this analysis is a modified
+* The second worker function is a modified
 version of Christina's `summary.famStudy()` function. 
 * `famStudy` objects are the output of `sim_RVstudy()` and
 `summary.famStudy()` is a summary function that returns
@@ -376,8 +391,7 @@ the counts of each variant in the affected members of each pedigree.
 * My modification
 is to split the counts of each variant by disease subtype. 
     - Note: This is a *very* quick-and-dirty function that assumes
-    that there are three families in the study and that there
-    are 12 affected individuals in total.
+    that there are three families in the study.
 
 ```{r}
 mysummary.famStudy <- function (object, ...)
@@ -442,6 +456,25 @@ affected_allele_count_HL <- function (ped_haps, hap_map, ped_file)
   aff_rows <- which(hap_map$ID %in% aff_IDs)
   total_count <- colSums(ped_haps[aff_rows, ])
   return(total_count)
+}
+```
+
+* The third worker function reorders the rows of the
+simulated genotypes matrix. The rows of the genotypes matrix correspond
+to affected individuals with sequencing data, the columns to RVs and the entries to genotypes.
+The function `reorder_genos()` orders the rows of the genotypes matrix to 
+be the same as the in the configurations of the lookup tables. 
+With the rows of the genotypes matrix ordered this way, 
+we can read the global configuration of any RV straight from its column in the matrix.
+The order of affected individuals in the
+configurations of the lookup tables is in the variable `binKey`
+returned by `cd_new()`.
+    - **Note:** This function is also in the simulation scripts for the statistic and p-value lookups.
+    
+```{r}
+reorder_genos <- function(a_seqs,binKey) {
+  a_seqs$ped_genos <- a_seqs$ped_genos[binKey,]
+  return(a_seqs)
 }
 ```
 

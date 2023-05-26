@@ -79,6 +79,7 @@ affected_allele_count_HL <- function (ped_haps, hap_map, ped_file)
   return(total_count)
 }
 
+
 ## --------------------------------------------------------------------------
 # The functions from here on are taken from R scripts in the simulation
 # workflow and are documented in the corresponding .Rmd files.
@@ -158,6 +159,8 @@ filter2aff <- function(seqs){
   odd_inds <- seq(from=1,to=nrow(ped_haplos)-1,by=2)
   even_inds <- seq(from=2,to=nrow(ped_haplos),by=2)
   ped_genos <- ped_haplos[odd_inds,] + ped_haplos[even_inds,]
+  IDs <- paste(haplo_map$FamID,haplo_map$ID,sep=":")[odd_inds]
+  rownames(ped_genos) <- IDs
   return(list(ped_files=seqs$ped_files,ped_haplos=ped_haplos,
               haplo_map=haplo_map,
               SNV_map=SNV_map, ped_genos=ped_genos))
@@ -208,13 +211,15 @@ get_pvals <- function(cRVs,lookupTabs,a_seqs){
   # for the different methods. In this context, the global LR and global
   # transmission tests with different carrier probs are different "methods".
   # The number of methods is the number of columns of lookupTabs$pvals
-  # minus 1 (since the first column of lookupTabs$pvals is binID).
-  pvals <- matrix(NA,nrow=3,ncol=(ncol(lookupTabs$pvals)-1))
+  # minus one for the binID column.
+  pvals <- matrix(NA,nrow=max(3,length(cRVs)),
+                  ncol=(ncol(lookupTabs$pvals)-1))
   for(i in 1:length(cRVs)) {
     # Find binID of the current cRV's configuration.
     binID <- find_binID(cRVs[i],a_seqs) # *worker*
     # Extract pvals for this configuration from the lookup table but
-    # remember that the first column of the lookup table is the binID.
+    # remember that the first few columns of the lookup table are the
+    # binID and configs.
     pvals[i,] <- lookupTabs$pvals[lookupTabs$pvals[,"binID"]==binID,-1]
   }
   return(pvals)
@@ -224,8 +229,9 @@ get_ranks <- function(cRVs,lookupTabs,a_seqs){
   # the different methods. In this context, the global LR approach with
   # different values of the carrier probability is taken to be different
   # "methods". The # of methods is the # of columns of lookupTabs$statvals
-  # minus 1 (since the 1st column of lookupTabs$statvals is binID).
-  ranks <- matrix(NA,nrow=max(3,length(cRVs)),ncol=(ncol(lookupTabs$statvals)-1))
+  # minus one for the binID column
+  ranks <- matrix(NA,nrow=max(3,length(cRVs)),
+                  ncol=(ncol(lookupTabs$statvals)-1))
   for(i in 1:length(cRVs)) {
     # Find base-10 representation, or "binID", of the configuration.
     binID <- find_binID(cRVs[i],a_seqs)
@@ -239,5 +245,17 @@ get_ranks <- function(cRVs,lookupTabs,a_seqs){
     }
   }
   return(ranks)
+}
+
+
+reorder_genos <- function(a_seqs,binKey) {
+  # Reorder the simulated genotypes of affected individuals
+  # to be the same as the in the configurations of the lookup tables.
+  # With the rows of the genotype matrix ordered this way, we can read the
+  # global configuration of any RV from its column in the matrix.
+  # The order of affected individuals in the configurations of the lookup
+  # tables is in the variable binKey returned by cd_new().
+  a_seqs$ped_genos <- a_seqs$ped_genos[binKey,]
+  return(a_seqs)
 }
 
